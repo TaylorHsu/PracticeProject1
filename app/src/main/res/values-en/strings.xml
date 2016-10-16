@@ -2,5 +2,13 @@
 <resources>
     <string name="app_name">PracticeProjectFor Locale EN</string>
     <string name="app_about">This is a Project for Practice and Test EN</string>
-    <string name="version">版本：PracticeProject1.0.1 EN</string>
+    <string name="version">Ver：PracticeProject1.0.1 EN</string>
+
+    <string name="str_about">About</string>
+
+    <!--ItemActivity用到的string-->
+    <string name="title">Title</string>
+    <string name="enter_title">Enter Title</string>
+    <string name="content">Content</string>
+    <string name="enter_content">Enter Content</string>
 </resources>

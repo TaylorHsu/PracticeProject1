@@ -2,4 +2,12 @@
     <string name="app_name">PracticeProject1</string>
     <string name="app_about">This is a Project for Practice and Test</string>
     <string name="version">版本：PracticeProject1.0.1</string>
+    <string name="str_about">關於</string>
+
+    <!--ItemActivity用到的string-->
+    <string name="title">標題</string>
+    <string name="enter_title">輸入標題</string>
+    <string name="content">內容</string>
+    <string name="enter_content">輸入內容</string>
+
 </resources>
