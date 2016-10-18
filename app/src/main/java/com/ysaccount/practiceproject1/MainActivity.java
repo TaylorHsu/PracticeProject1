@@ -1,6 +1,7 @@
 package com.ysaccount.practiceproject1;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -15,9 +16,57 @@ import android.view.View;
 import android.widget.Toast;
 import android.content.Intent;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /*
 ----------------------------------------------------------------
+Date & Version:2016-10-17 V1.3.0
+Program Name: PracticeProject1
+Programer: Taylor
+Note: This project for practice the Tutorial
+基礎練習 包含以下內容
+加強ListView元件的使用，為它設計專用的畫面，讓一個項目可以顯示比較多的資料
+1.建立Color enum class以封裝顏色資料的類別,用來記錄顏色
+
+2.new Item class用來讓Item List儲存較多資料
+
+3.new item_drawable for List資料前的顏色按鈕
+
+4.new single item xml表示單個item在List上的元件
+
+5.new ItemAdapter=>撰寫一個自訂的Adapter來給ListView使用來處理複雜資料
+
+6.修改MainActivity
+  用自訂物件宣告 ItemAdapter , List<Item>
+  新增範例資料(到陣列)
+  建立自定Adapter物件 ,setAdapter
+
+ 7.修改ItemActivity
+  OnCreate時,若為新增,則new Item
+  onSubmit,改為處理Item物件
+
+  8.MainActivity    onActivityResult=>新增item,更新畫面資料
+
+  9.ItemActivity,onCreate 若是Edit,接收Item物件(item,position)以取得要修改的item
+
+  10.MainActivity  onActivityResult=>修改item,更新畫面資料
+
+  11.新增ColorActivity,以設定顏色 ("@android:style/Theme.Dialog")
+    ColorActivity
+     1)LinearLayout color_gallery
+     2) for (Colors c : Colors.values())
+         loop new color Button
+     3)Button Click傳送Color ID
+     4)回到 ItemActivity,Onclick func 若點選Select Color 則跳出ColorActivity
+            onActivityResult 依回傳值get color ,set item color
+  12.設定 長按修改,Click為選擇
+    當選擇1個以上  menu修改為show delete
+    可點選和取消點選
+    當按下delete詢問是否刪除
+
+
+ ---------------------------------------------------------------
 Date & Version:2016-10-16 V1.2.0
 Program Name: PracticeProject1
 Programer: Taylor
@@ -152,23 +201,48 @@ public class MainActivity extends AppCompatActivity {
             "List View Item_2",
             "List View Item_3"};*/
     // 換掉原來的字串陣列
-    private ArrayList<String> data = new ArrayList<>();
-    private ArrayAdapter<String> adapter;
+
+    // 刪除原來的宣告
+    //private ArrayList<String> data = new ArrayList<>();
+    //private ArrayAdapter<String> adapter;
+
+    // ListView使用的自定Adapter物件
+    private ItemAdapter itemAdapter;
+    // 儲存所有記事本的List物件
+    private List<Item> items;
+
+    // 選單項目物件
+    private MenuItem add_item, search_item, revert_item, share_item, delete_item;
+
+    // 已選擇項目數量
+    private int selectedCount = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        data.add("List Item 1");
+       /* data.add("List Item 1");
         data.add("List Item 2");
-        data.add("List Item 3");
+        data.add("List Item 3");*/
 
         processViews();  //在這個方法中，取得畫面元件物件後指定給欄位變數
         processControllers();   // 在這個方法中，宣告或建立需要的監聽物件並執行所有需要的註冊工作
-
+        /*
         int ListViewID = android.R.layout.simple_list_item_1;
         adapter = new ArrayAdapter <> (this, ListViewID, data);
-        item_list.setAdapter(adapter);
+        item_list.setAdapter(adapter);*/
+
+        // 加入範例資料 ,改用自定Adapter物件
+        items = new ArrayList<Item>();
+        items.add(new Item(1, new Date().getTime(), color.RED, "List Item 1.", "Hello content", "", 0, 0, 0));
+        items.add(new Item(2, new Date().getTime(), color.BLUE, "List Item 2", "Hello content", "", 0, 0, 0));
+        items.add(new Item(3, new Date().getTime(), color.GREEN, "List Item 3", "Hello content", "", 0, 0, 0));
+
+        // 建立自定Adapter物件
+        itemAdapter = new ItemAdapter(this, R.layout.singleitem, items);
+        item_list.setAdapter(itemAdapter);
+
     }
 
     private void processViews() {
@@ -193,7 +267,7 @@ public class MainActivity extends AppCompatActivity {
         };
         //V1.2.0改成點選ListView Item跳出視窗 修改Item
         */
-
+        /*
         AdapterView.OnItemClickListener itemListener = new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
@@ -210,6 +284,35 @@ public class MainActivity extends AppCompatActivity {
         };
         // 註冊選單項目點擊監聽物件
         item_list.setOnItemClickListener(itemListener);
+        */
+        // 讀取選擇的記事物件
+        //
+        AdapterView.OnItemClickListener itemListener = new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                // 讀取選擇的記事物件
+                Item item = itemAdapter.getItem(position);
+
+                // 如果已經有勾選的項目
+                if (selectedCount > 0) {
+                    // 處理是否顯示已選擇項目
+                    processMenu(item);
+                    // 重新設定記事項目
+                    itemAdapter.set(position, item);
+                } else {
+                    Intent intent = new Intent(
+                            "com.ysaccount.practiceproject1.EDIT_ITEM");
+
+                    // 設定記事編號與記事物件
+                    intent.putExtra("position", position);
+                    intent.putExtra("com.ysaccount.practiceproject1.Item", item);
+
+                    startActivityForResult(intent, 1);
+                }
+            }
+        };
+        item_list.setOnItemClickListener(itemListener);
 
 
         // 建立選單項目長按監聽物件
@@ -221,16 +324,20 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view,
                                            int position, long id) {
-                Toast.makeText(MainActivity.this,"Long: " +
-                        //data[position], Toast.LENGTH_LONG).show();
-                        // 換掉「data[position]」 =>  data.get(position)
-                        data.get(position), Toast.LENGTH_LONG).show();
-                return false;
+                // 讀取選擇的記事物件
+                Item item = itemAdapter.getItem(position);
+                // 處理是否顯示已選擇項目
+                processMenu(item);
+                // 重新設定記事項目
+                itemAdapter.set(position, item);
+                return true;
             }
         };
 
         // 註冊選單項目長按監聽物件
         item_list.setOnItemLongClickListener(itemLongListener);
+
+        /*
         // 建立長按監聽物件
         View.OnLongClickListener listener = new View.OnLongClickListener() {
             @Override
@@ -242,13 +349,27 @@ public class MainActivity extends AppCompatActivity {
                         .show();
                 return false;
             }
-        };
+        };*/
     }
 
     // 加入載入選單資源的方法
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
+        //getMenuInflater().inflate(R.menu.main_menu, menu);
+        //return true;
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.main_menu, menu);
+
+        // 取得選單項目物件
+        add_item = menu.findItem(R.id.add_item);
+        search_item = menu.findItem(R.id.search_item);
+        revert_item = menu.findItem(R.id.revert_item);
+        share_item = menu.findItem(R.id.share_item);
+        delete_item = menu.findItem(R.id.delete_item);
+
+        // 設定選單項目
+        processMenu(null);
+
         return true;
     }
     // 使用者選擇所有的選單項目都會呼叫這個方法
@@ -267,8 +388,54 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(intent, 0);
                 break;
             case R.id.revert_item:
+                for (int i = 0; i < itemAdapter.getCount(); i++) {
+                    Item ri = itemAdapter.getItem(i);
+
+                    if (ri.isSelected()) {
+                        ri.setSelected(false);
+                        itemAdapter.set(i, ri);
+                    }
+                }
+
+                selectedCount = 0;
+                processMenu(null);
                 break;
             case R.id.delete_item:
+                // 沒有選擇
+                if (selectedCount == 0) {
+                    break;
+                }
+
+                // 建立與顯示詢問是否刪除的對話框
+                AlertDialog.Builder d = new AlertDialog.Builder(this);
+                String message = getString(R.string.delete_item);
+                d.setTitle(R.string.delete)
+                        .setMessage(String.format(message, selectedCount));
+                d.setPositiveButton(android.R.string.yes,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                // 刪除所有已勾選的項目
+                                int index = itemAdapter.getCount() - 1;
+
+                                while (index > -1) {
+                                    Item item = itemAdapter.get(index);
+
+                                    if (item.isSelected()) {
+                                        itemAdapter.remove(item);
+                                    }
+
+                                    index--;
+                                }
+
+                                // 通知資料改變
+                                itemAdapter.notifyDataSetChanged();
+                                selectedCount = 0;
+                                processMenu(null);
+                            }
+                        });
+                d.setNegativeButton(android.R.string.no, null);
+                d.show();
                 break;
         }
 
@@ -304,12 +471,25 @@ public class MainActivity extends AppCompatActivity {
         if (resultCode == Activity.RESULT_OK) {
             String titleText = data.getStringExtra("titleText");
 
+            // 讀取記事物件
+            Item item = (Item) data.getExtras().getSerializable(
+                    "com.ysaccount.practiceproject1.Item");
+
             // 如果是新增記事
             if (requestCode == 0) {
                 // 加入標題項目
-                this.data.add(titleText);
+                //this.data.add(titleText);
                 // 通知資料已經改變，ListView元件才會重新顯示
-                adapter.notifyDataSetChanged();
+                // adapter.notifyDataSetChanged();
+                // 設定記事物件的編號與日期時間
+                item.setId(items.size() + 1);
+                item.setDatetime(new Date().getTime());
+
+                // 加入新增的記事物件
+                items.add(item);
+
+                // 通知資料改變
+                itemAdapter.notifyDataSetChanged();
             }
             // 如果是修改記事
             else if (requestCode == 1) {
@@ -318,12 +498,41 @@ public class MainActivity extends AppCompatActivity {
 
                 if (position != -1) {
                     // 設定標題項目
-                    this.data.set(position, titleText);
+                    //this.data.set(position, titleText);
                     // 通知資料已經改變，ListView元件才會重新顯示
-                    adapter.notifyDataSetChanged();
+                    //adapter.notifyDataSetChanged();
+
+                    // 設定修改的記事物件
+                    items.set(position, item);
+                    itemAdapter.notifyDataSetChanged();
                 }
+
             }
         }
+    }
+
+    // 處理是否顯示已選擇項目
+    private void processMenu(Item item) {
+        // 如果需要設定記事項目
+        if (item != null) {
+            // 設定已勾選的狀態
+            item.setSelected(!item.isSelected());
+
+            // 計算已勾選數量
+            if (item.isSelected()) {
+                selectedCount++;
+            }
+            else {
+                selectedCount--;
+            }
+        }
+
+        // 根據選擇的狀況，設定是否顯示選單項目
+        add_item.setVisible(selectedCount == 0);
+        search_item.setVisible(selectedCount == 0);
+        revert_item.setVisible(selectedCount > 0);
+        share_item.setVisible(selectedCount > 0);
+        delete_item.setVisible(selectedCount > 0);
     }
 
 }

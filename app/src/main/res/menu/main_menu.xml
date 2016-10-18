@@ -31,4 +31,10 @@
         android:title="DELETE"
         app:showAsAction="ifRoom"
         android:onClick="clickMenuItem"/>
+    <item
+        android:id="@+id/share_item"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:title="DELETE"
+        app:showAsAction="ifRoom"
+        android:onClick="clickMenuItem"/>
 </menu>
