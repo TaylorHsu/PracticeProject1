@@ -21,6 +21,53 @@ import java.util.List;
 
 /*
 ----------------------------------------------------------------
+Date & Version:2016-10-19 V1.5.0
+Program Name: PracticeProject1
+Programer: Taylor
+Note: This project for practice the Tutorial
+基礎練習 包含以下內容  使用照相機與麥克風
+
+應用程式需要執行拍照的功能，可以啟動系統相機元件執行拍照的工作，它的系統Action名稱變數是「MediaStore.ACTIONIMAGECAPTURE」，
+使用這個Action名稱建立好的Intent物件，可以呼叫putExtra方法加入照片檔案儲存位置的設定資料，
+資料的名稱是「MediaStore.EXTRA_OUTPUT」，如果沒有指定的話，會使用系統預設的名稱儲存在預設的位置。
+
+<!-- 需要攝錄鏡頭設備 -->
+<uses-feature android:name="android.hardware.camera" />
+<!-- 寫入外部儲存設備 -->
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+<!--使用裝置的錄音設備-->
+<uses-permission android:name="android.permission.RECORD_AUDIO"/>
+
+1.建立FileUtil來做檔案控制
+2.呼叫相機拍照畫面來拍照
+  Intent intentCamera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+3.Play/Record Activity 做出錄音和播放頁面
+
+
+----------------------------------------------------------------
+Date & Version:2016-10-18 V1.4.0
+Program Name: PracticeProject1
+Programer: Taylor
+Note: This project for practice the Tutorial
+基礎練習 包含以下內容
+使用Android內建的SQLite資料庫
+1 設計資料庫表格  SQLite資料庫的資料型態只有下面這幾種
+INTEGER – 整數，對應Java 的byte、short、int 和long。
+REAL – 小數，對應Java 的float 和double。
+TEXT – 字串，對應Java 的String。
+2. 建立SQLiteOpenHelper類別  new=>MyDBHelper.Class
+Android 提供許多方便與簡單的資料庫API，可以簡化應用程式處理資料庫的工作。
+這些API都在「android.database.sqlite」套件，它們可以用來執行資料庫的管理和查詢的工作。
+在這個套件中的「SQLiteOpenHelper」類別，可以在應用程式中執行建立資料庫與表格的工作，
+應用程式第一次在裝置執行的時候，由它負責建立應用程式需要的資料庫與表格，後續執行的時候開啟已經建立好的資料庫讓應用程式使用。
+還有應用程式在運作一段時間以後，如果增加或修改功能，資料庫的表格也增加或修改了，
+它也可以為應用程式執行資料庫的修改工作，讓新的應用程式可以正常的運作
+
+MyDBHelper.Class
+
+3.ItemDAO  在一般應用程式中執行資料庫工作的設計方式，把執行資料庫工作的部份寫在一個獨立的Java類別中
+
+----------------------------------------------------------------
 Date & Version:2016-10-17 V1.3.0
 Program Name: PracticeProject1
 Programer: Taylor
@@ -217,6 +264,9 @@ public class MainActivity extends AppCompatActivity {
     // 已選擇項目數量
     private int selectedCount = 0;
 
+    // 宣告資料庫功能類別欄位變數
+    private ItemDAO itemDAO;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -233,15 +283,29 @@ public class MainActivity extends AppCompatActivity {
         adapter = new ArrayAdapter <> (this, ListViewID, data);
         item_list.setAdapter(adapter);*/
 
-        // 加入範例資料 ,改用自定Adapter物件
+        /*// 加入範例資料 ,改用自定Adapter物件
         items = new ArrayList<Item>();
         items.add(new Item(1, new Date().getTime(), color.RED, "List Item 1.", "Hello content", "", 0, 0, 0));
         items.add(new Item(2, new Date().getTime(), color.BLUE, "List Item 2", "Hello content", "", 0, 0, 0));
         items.add(new Item(3, new Date().getTime(), color.GREEN, "List Item 3", "Hello content", "", 0, 0, 0));
+        */
+
+        // 建立資料庫物件
+        itemDAO = new ItemDAO(getApplicationContext());
+
+        // 如果資料庫是空的，就建立一些範例資料
+        // 這是為了方便測試用的，完成應用程式以後可以拿掉
+        if (itemDAO.getCount() == 0) {
+            itemDAO.sample();
+        }
+
+        // 取得所有記事資料
+        items = itemDAO.getAll();
 
         // 建立自定Adapter物件
         itemAdapter = new ItemAdapter(this, R.layout.singleitem, items);
         item_list.setAdapter(itemAdapter);
+
 
     }
 
@@ -423,6 +487,8 @@ public class MainActivity extends AppCompatActivity {
 
                                     if (item.isSelected()) {
                                         itemAdapter.remove(item);
+                                        // 刪除資料庫中的記事資料
+                                        itemDAO.delete(item.getId());
                                     }
 
                                     index--;
@@ -485,6 +551,8 @@ public class MainActivity extends AppCompatActivity {
                 item.setId(items.size() + 1);
                 item.setDatetime(new Date().getTime());
 
+                // 新增記事資料到資料庫
+                item = itemDAO.insert(item);
                 // 加入新增的記事物件
                 items.add(item);
 
@@ -501,6 +569,9 @@ public class MainActivity extends AppCompatActivity {
                     //this.data.set(position, titleText);
                     // 通知資料已經改變，ListView元件才會重新顯示
                     //adapter.notifyDataSetChanged();
+
+                    // 修改資料庫中的記事資料
+                    itemDAO.update(item);
 
                     // 設定修改的記事物件
                     items.set(position, item);
