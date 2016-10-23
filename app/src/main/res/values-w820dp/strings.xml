@@ -15,4 +15,9 @@
 
     <string name="delete">刪除</string>
     <string name="delete_item">確定要刪除 %1$d 個項目？</string>
+
+    <string name="title_record">語音備忘</string>
+    <string name="title_play">播放語音備忘</string>
+    <string name="record_play">播放</string>
+    <string name="record_new">重新錄製</string>
 </resources>

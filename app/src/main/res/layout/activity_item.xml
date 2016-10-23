@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- 使用ScrollView為最外層的元件 -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+<TableLayout
 xmlns:tools="http://schemas.android.com/tools"
 android:layout_width="match_parent"
 android:layout_height="match_parent"
@@ -46,6 +51,16 @@ tools:context="com.ysaccount.practiceproject1.ItemActivity">
         android:textAppearance="?android:attr/textAppearanceMedium" />
 </TableRow>
 
+    <!-- 顯示圖片 -->
+    <ImageView
+        android:id="@+id/picture"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="6sp"
+        android:layout_margin="2sp"
+        android:visibility="invisible" />
+
+
 <TableLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -70,7 +85,7 @@ tools:context="com.ysaccount.practiceproject1.ItemActivity">
 
         <ImageButton
             android:id="@+id/set_alarm"
-            android:src="@android:drawable/ic_menu_edit"
+            android:src="@drawable/alarm_icon"
             android:onClick="clickFunction" />
 
         <ImageButton
@@ -106,3 +121,6 @@ tools:context="com.ysaccount.practiceproject1.ItemActivity">
 </TableLayout>
 
 </TableLayout>
+
+    <!-- ScrollView的結束標籤 -->
+</ScrollView>

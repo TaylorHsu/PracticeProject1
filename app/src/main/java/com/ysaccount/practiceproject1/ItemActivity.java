@@ -1,16 +1,20 @@
 package com.ysaccount.practiceproject1;
 
+
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import android.net.Uri;
 import android.os.Bundle;
-import android.widget.EditText;
-import android.widget.ListView;
+import android.provider.MediaStore;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageView;
 
+import java.io.File;
 import java.util.Date;
-
-import static com.ysaccount.practiceproject1.R.id.item_list;
 
 /*
 取得Intent物件
@@ -49,6 +53,14 @@ public class ItemActivity extends AppCompatActivity {
     private Item item;
     private color Colors;
 
+    // 檔案名稱
+    private String fileName;
+    // 照片
+    private ImageView picture;
+
+    // 錄音檔案名稱
+    private String recFileName;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,6 +93,9 @@ public class ItemActivity extends AppCompatActivity {
     private void processViews() {
         title_text = (EditText) findViewById(R.id.title_text);
         content_text = (EditText) findViewById(R.id.content_text);
+
+        // 取得顯示照片的ImageView元件
+        picture = (ImageView) findViewById(R.id.picture);
     }
 
     // 點擊確定與取消按鈕都會呼叫這個方法
@@ -120,8 +135,55 @@ public class ItemActivity extends AppCompatActivity {
 
         switch (id) {
             case R.id.take_picture:
+                // 啟動相機元件用的Intent物件
+                Intent intentCamera =
+                        new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+                // 照片檔案名稱
+                File pictureFile = configFileName("P", ".jpg");
+                Uri uri = Uri.fromFile(pictureFile);
+                // 設定檔案名稱
+                intentCamera.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+                // 啟動相機元件
+                startActivityForResult(intentCamera, START_CAMERA);
                 break;
             case R.id.record_sound:
+                // 錄音檔案名稱
+                final File recordFile = configRecFileName("R", ".mp3");
+
+                // 如果已經有錄音檔，詢問播放或重新錄製
+                if (recordFile.exists()) {
+                    // 詢問播放還是重新錄製的對話框
+                    AlertDialog.Builder d = new AlertDialog.Builder(this);
+
+                    d.setTitle(R.string.title_record)
+                            .setCancelable(false);
+                    d.setPositiveButton(R.string.record_play,
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // 播放
+                                    Intent playIntent = new Intent(
+                                            ItemActivity.this, PlayActivity.class);
+                                    playIntent.putExtra("fileName",
+                                            recordFile.getAbsolutePath());
+                                    startActivity(playIntent);
+                                }
+                            });
+                    d.setNeutralButton(R.string.record_new,
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    goToRecord(recordFile);
+                                }
+                            });
+                    d.setNegativeButton(android.R.string.cancel, null);
+
+                    // 顯示對話框
+                    d.show();
+                }
+                // 如果沒有錄音檔，啟動錄音元件
+                else {
+                    goToRecord(recordFile);
+                }
                 break;
             case R.id.set_location:
                 break;
@@ -141,8 +203,12 @@ public class ItemActivity extends AppCompatActivity {
         if (resultCode == Activity.RESULT_OK) {
             switch (requestCode) {
                 case START_CAMERA:
+                    // 設定照片檔案名稱
+                    item.setFileName(fileName);
                     break;
                 case START_RECORD:
+                    // 設定錄音檔案名稱
+                    item.setRecFileName(recFileName);
                     break;
                 case START_LOCATION:
                     break;
@@ -158,26 +224,78 @@ public class ItemActivity extends AppCompatActivity {
         }
     }
 
-    private color getColors(int color) {
-        color result = Colors.LIGHTGREY;
+    public static color getColors(int color1) {
+        color result = color.LIGHTGREY;
 
-        if (color == Colors.BLUE.parseColor()) {
-            result = Colors.BLUE;
+        if (color1 == color.BLUE.parseColor()) {
+            result = color.BLUE;
         }
-        else if (color == Colors.PURPLE.parseColor()) {
-            result = Colors.PURPLE;
+        else if (color1 == color.PURPLE.parseColor()) {
+            result = color.PURPLE;
         }
-        else if (color == Colors.GREEN.parseColor()) {
-            result = Colors.GREEN;
+        else if (color1 == color.GREEN.parseColor()) {
+            result = color.GREEN;
         }
-        else if (color == Colors.ORANGE.parseColor()) {
-            result = Colors.ORANGE;
+        else if (color1 == color.ORANGE.parseColor()) {
+            result = color.ORANGE;
         }
-        else if (color == Colors.RED.parseColor()) {
-            result = Colors.RED;
+        else if (color1 == color.RED.parseColor()) {
+            result = color.RED;
         }
 
         return result;
     }
 
+    private File configFileName(String prefix, String extension) {
+        // 如果記事資料已經有檔案名稱
+        if (item.getFileName() != null && item.getFileName().length() > 0) {
+            fileName = item.getFileName();
+        }
+        // 產生檔案名稱
+        else {
+            fileName = FileUtil.getUniqueFileName();
+        }
+
+        return new File(FileUtil.getExternalStorageDir(FileUtil.APP_DIR),
+                prefix + fileName + extension);
+    }
+
+    private File configRecFileName(String prefix, String extension) {
+        // 如果記事資料已經有檔案名稱
+        if (item.getRecFileName() != null && item.getRecFileName().length() > 0) {
+            recFileName = item.getRecFileName();
+        }
+        // 產生檔案名稱
+        else {
+            recFileName = FileUtil.getUniqueFileName();
+        }
+
+        return new File(FileUtil.getExternalStorageDir(FileUtil.APP_DIR),
+                prefix + recFileName + extension);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // 如果有檔案名稱
+        if (item.getFileName() != null && item.getFileName().length() > 0) {
+            // 照片檔案物件
+            File file = configFileName("P", ".jpg");
+
+            // 如果照片檔案存在
+            if (file.exists()) {
+                // 顯示照片元件
+                picture.setVisibility(View.VISIBLE);
+                // 設定照片
+                FileUtil.fileToImageView(file.getAbsolutePath(), picture);
+            }
+        }
+    }
+    private void goToRecord(File recordFile) {
+        // 錄音
+        Intent recordIntent = new Intent(this, RecordActivity.class);
+        recordIntent.putExtra("fileName", recordFile.getAbsolutePath());
+        startActivityForResult(recordIntent, START_RECORD);
+    }
 }

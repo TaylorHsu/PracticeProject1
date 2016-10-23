@@ -22,6 +22,8 @@ public class Item implements java.io.Serializable {
     private double longitude;
     private long lastModify;
     private boolean selected;
+    // 錄音檔案名稱
+    private String recFileName;
 
 
     public Item() {
@@ -31,7 +33,7 @@ public class Item implements java.io.Serializable {
     }
 
     public Item(long id, long datetime, color color, String title,
-                String content, String fileName, double latitude, double longitude,
+                String content, String fileName, String recFileName, double latitude, double longitude,
                 long lastModify) {
         this.id = id;
         this.datetime = datetime;
@@ -39,6 +41,8 @@ public class Item implements java.io.Serializable {
         this.title = title;
         this.content = content;
         this.fileName = fileName;
+        // 錄音檔案名稱
+        this.recFileName = recFileName;
         this.latitude = latitude;
         this.longitude = longitude;
         this.lastModify = lastModify;
@@ -107,6 +111,7 @@ public class Item implements java.io.Serializable {
         this.fileName = fileName;
     }
 
+
     public double getLatitude() {
         return latitude;
     }
@@ -137,6 +142,14 @@ public class Item implements java.io.Serializable {
 
     public void setSelected(boolean selected) {
         this.selected = selected;
+    }
+
+    public String getRecFileName() {
+        return recFileName;
+    }
+
+    public void setRecFileName(String recFileName) {
+        this.recFileName = recFileName;
     }
 
 }

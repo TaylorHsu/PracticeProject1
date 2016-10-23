@@ -21,6 +21,32 @@ import java.util.List;
 
 /*
 ----------------------------------------------------------------
+Date & Version:2016-10-20 V1.6.0
+Program Name: PracticeProject1
+Programer: Taylor
+Note: This project for practice the Tutorial
+基礎練習
+Android 系統提供一種「Preference」的架構，它可以在應用程式中儲存一些「名稱＝值」這類簡單的資料，
+這些資料可以用來儲存應用程式的狀態，或是儲存使用者執行的設定。這些資料在應用程式中執行儲存與讀取的工作都非常容易，
+如果有這類的需求，使用它來處理是最方便的。
+
+PreferenceActivity元件 – 設定元件專用的Activity元件，讓你的元件類別繼承自這個類別。
+設定元件專用的畫面配置檔放在專案的「res/xml」目錄下，這個設定檔的最外層使用「PreferenceScreen」標籤，根據應用程式需要的設定資料，在這裡標籤中加入這些需要的設定元件標籤：
+
+EditTextPreference – 使用對話框讓使用者輸入文字資料。
+CheckBoxPreference – 勾選元件，儲存boolean 資料。
+SwitchPreference – 在Android 4.0（API level 14）加入，提供開關式的元
+件，儲存boolean 資料。
+ListPreference – 使用對話框讓使用者在列表中選擇一個項目，儲存字串資料。
+MultiSelectListPreference – 在Android 3.0（API level 11）加入，使用對話框讓使用者在列表中選擇多個項目，儲存Set 資料。
+RingtonePreference – 開啟系統內建選擇來電鈴聲的對話框讓使用者選擇，儲存文字資料。
+PreferenceCategory – 用來執行設定資料的分組。
+Preference – 啟動其它元件執行設定的工作。
+
+
+
+
+----------------------------------------------------------------
 Date & Version:2016-10-19 V1.5.0
 Program Name: PracticeProject1
 Programer: Taylor
@@ -604,6 +630,12 @@ public class MainActivity extends AppCompatActivity {
         revert_item.setVisible(selectedCount > 0);
         share_item.setVisible(selectedCount > 0);
         delete_item.setVisible(selectedCount > 0);
+    }
+
+    // 設定
+    public void clickPreferences(MenuItem item) {
+        // 啟動設定元件
+        startActivity(new Intent(this, PrefActivity.class));
     }
 
 }
